@@ -19,6 +19,11 @@ const coachSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  sex: {
+    type: String, 
+    required: true,
+    enum: ['Male','Female','Other']
+  },
   address: {
     type: String,
     required: true,

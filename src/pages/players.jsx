@@ -8,12 +8,14 @@ const Players = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingPlayerId, setEditingPlayerId] = useState(null);
+  const [selectedSex, setSelectedSex] = useState("male"); // default to male players
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     age: "",
+    sex: "",
     address: "",
     national_id: "",
     ranking: "",
@@ -26,23 +28,25 @@ const Players = () => {
   }, []);
 
   useEffect(() => {
+    // filter by searchTerm AND selectedSex
     const filtered = players.filter(
       (player) =>
-        player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        player.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        player.phone.includes(searchTerm) ||
-        player.national_id.includes(searchTerm) ||
-        player.club.toLowerCase().includes(searchTerm.toLowerCase())
+        player.sex.toLowerCase() === selectedSex &&
+        (player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          player.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          player.phone.includes(searchTerm) ||
+          player.national_id.includes(searchTerm) ||
+          player.club.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     setFilteredPlayers(filtered);
-  }, [searchTerm, players]);
+  }, [searchTerm, players, selectedSex]);
 
   const fetchPlayers = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/players");
       const data = await res.json();
       setPlayers(data);
-      setFilteredPlayers(data);
+      // no need to setFilteredPlayers here, useEffect will handle it
     } catch (error) {
       console.error("Failed to fetch players", error);
     }
@@ -101,7 +105,18 @@ const Players = () => {
   };
 
   const handleEdit = (player) => {
-    setFormData(player);
+    setFormData({
+      name: player.name || "",
+      email: player.email || "",
+      phone: player.phone || "",
+      age: player.age !== undefined ? player.age.toString() : "",
+      sex: player.sex || "",
+      address: player.address || "",
+      national_id: player.national_id || "",
+      ranking: player.ranking !== undefined ? player.ranking.toString() : "",
+      club: player.club || "",
+      image: player.image || "",
+    });
     setEditingPlayerId(player._id);
     setIsEditing(true);
     setShowForm(true);
@@ -113,6 +128,7 @@ const Players = () => {
       email: "",
       phone: "",
       age: "",
+      sex: "",
       address: "",
       national_id: "",
       ranking: "",
@@ -131,22 +147,47 @@ const Players = () => {
   return (
     <div className="flex flex-col w-auto min-h-screen bg-gray-100">
       <Navbar />
-
       <div className="container  mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-2xl font-bold mb-6">Players</span>
+        <div className="flex flex-wrap justify-between items-center mb-4 space-x-4">
+          <span className="text-2xl font-bold mb-6 flex-grow">Players</span>
+
           <input
             type="text"
             placeholder="Search players..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border rounded bg-white px-3 py-2 sm:w-1/2 w-full"
+            className="border rounded bg-white px-3 py-2 sm:w-1/2 w-full max-w-md"
           />
+
           <button
             onClick={() => setShowForm(true)}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition whitespace-nowrap"
           >
             Add Player
+          </button>
+        </div>
+
+        {/* Buttons to toggle Male / Female */}
+        <div className="mb-4 flex space-x-4">
+          <button
+            className={`px-4 py-2 rounded font-semibold ${
+              selectedSex === "male"
+                ? "bg-green-600 text-white"
+                : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+            }`}
+            onClick={() => setSelectedSex("male")}
+          >
+            Male Players
+          </button>
+          <button
+            className={`px-4 py-2 rounded font-semibold ${
+              selectedSex === "female"
+                ? "bg-pink-600 text-white"
+                : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+            }`}
+            onClick={() => setSelectedSex("female")}
+          >
+            Female Players
           </button>
         </div>
 
@@ -168,6 +209,9 @@ const Players = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Age
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Sex
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Address
@@ -208,6 +252,7 @@ const Players = () => {
                     {player.phone}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">{player.age}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{player.sex}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {player.address}
                   </td>
@@ -237,7 +282,7 @@ const Players = () => {
               ))}
               {filteredPlayers.length === 0 && (
                 <tr>
-                  <td colSpan="10" className="text-center py-4">
+                  <td colSpan="11" className="text-center py-4">
                     No players found.
                   </td>
                 </tr>
@@ -246,7 +291,6 @@ const Players = () => {
           </table>
         </div>
       </div>
-
       {showForm && (
         <>
           <div
@@ -264,26 +308,46 @@ const Players = () => {
                 {isEditing ? "Edit Player" : "Add New Player"}
               </h2>
 
-              {Object.entries(formData).map(([key, value]) => (
-                <input
-                  key={key}
-                  type={
-                    key === "email"
-                      ? "email"
-                      : key === "age" || key === "ranking"
-                      ? "number"
-                      : "text"
-                  }
-                  name={key}
-                  placeholder={key.replace("_", " ").toUpperCase()}
-                  value={value}
-                  onChange={handleChange}
-                  className={`border px-3 py-2 rounded ${
-                    key === "image" ? "col-span-full" : ""
-                  }`}
-                  required={key !== "image"}
-                />
-              ))}
+              {Object.entries(formData).map(([key, value]) => {
+                if (key === "sex") {
+                  return (
+                    <select
+                      key={key}
+                      name="sex"
+                      value={value}
+                      onChange={handleChange}
+                      className="border px-3 py-2 rounded"
+                      required
+                    >
+                      <option value="">Select Sex</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  );
+                }
+
+                return (
+                  <input
+                    key={key}
+                    type={
+                      key === "email"
+                        ? "email"
+                        : key === "age" || key === "ranking"
+                        ? "number"
+                        : "text"
+                    }
+                    name={key}
+                    placeholder={key.replace("_", " ").toUpperCase()}
+                    value={value}
+                    onChange={handleChange}
+                    className={`border px-3 py-2 rounded ${
+                      key === "image" ? "col-span-full" : ""
+                    }`}
+                    required={key !== "image"}
+                  />
+                );
+              })}
 
               <div className="col-span-full flex justify-end space-x-4 mt-4">
                 <button

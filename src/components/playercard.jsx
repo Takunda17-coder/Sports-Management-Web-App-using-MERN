@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 
-
 const Playercard = () => {
   const [players, setPlayers] = useState([]);
   const [filteredPlayers, setFilteredPlayers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [visibleCount, setVisibleCount] = useState(5);
 
   useEffect(() => {
     fetchPlayers();
@@ -32,6 +32,16 @@ const Playercard = () => {
     }
   };
 
+  const handleToggle = () => {
+    if (visibleCount >= filteredPlayers.length) {
+      setVisibleCount(5);
+    } else {
+      setVisibleCount(filteredPlayers.length);
+    }
+  };
+
+  const visiblePlayers = filteredPlayers.slice(0, visibleCount);
+
   return (
     <div className="flex w-full justify-center self-start h-auto bg-white rounded-lg shadow-md border border-gray-200">
       <div className="container mx-auto px-4 py-8">
@@ -44,38 +54,43 @@ const Playercard = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ranking
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sex</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ranking</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Club</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredPlayers.map((player) => (
+              {visiblePlayers.map((player) => (
                 <tr key={player._id} className="border-b last:border-0">
                   <td className="px-6 py-4 whitespace-nowrap">{player.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {player.email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {player.phone}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{player.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{player.phone}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{player.age}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {player.ranking}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{player.sex}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{player.ranking}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{player.club}</td>
                 </tr>
               ))}
               {filteredPlayers.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="text-center py-4">
+                  <td colSpan="7" className="text-center py-4">
                     No players found.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+
+          {filteredPlayers.length > 5 && (
+            <div className="text-center mt-4">
+              <button
+                onClick={handleToggle}
+                className="text-blue-600 hover:underline"
+              >
+                {visibleCount >= filteredPlayers.length ? "Show Less" : "Show More"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

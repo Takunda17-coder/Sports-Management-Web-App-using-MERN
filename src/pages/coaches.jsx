@@ -3,22 +3,23 @@ import Navbar from "../components/navbar";
 
 const Coaches = () => {
   const [coaches, setCoaches] = useState([]);
-  const [filteredCoaches, setFilteredCoaches] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingCoachId, setEditingCoachId] = useState(null);
+  const [selectedSex, setSelectedSex] = useState("male"); // default show male coaches
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     age: "",
+    sex: "",
     address: "",
     certification: "",
     experience: "",
     club: "",
-    national_id: "", // Added national_id here
+    national_id: "",
     image: "",
   });
 
@@ -26,27 +27,27 @@ const Coaches = () => {
     fetchCoaches();
   }, []);
 
-  useEffect(() => {
-    const filtered = coaches.filter(
-      (coach) =>
-        coach.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        coach.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        coach.phone.includes(searchTerm) ||
-        coach.club.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredCoaches(filtered);
-  }, [searchTerm, coaches]);
-
   const fetchCoaches = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/coaches");
       const data = await res.json();
       setCoaches(data);
-      setFilteredCoaches(data);
     } catch (error) {
       console.error("Failed to fetch coaches", error);
     }
   };
+
+  // Filter coaches by selected sex and search term
+  const filteredCoaches = coaches.filter(
+    (coach) =>
+      coach.sex.toLowerCase() === selectedSex &&
+      (coach.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        coach.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        coach.phone.includes(searchTerm) ||
+        coach.club.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  // Handlers for add/update, delete, edit, reset, change remain unchanged (keep your existing code here)...
 
   const handleAddOrUpdateCoach = async (e) => {
     e.preventDefault();
@@ -96,7 +97,19 @@ const Coaches = () => {
   };
 
   const handleEdit = (coach) => {
-    setFormData(coach);
+    setFormData({
+      name: coach.name || "",
+      email: coach.email || "",
+      phone: coach.phone || "",
+      age: coach.age || "",
+      sex: coach.sex || "",
+      address: coach.address || "",
+      certification: coach.certification || "",
+      experience: coach.experience || "",
+      club: coach.club || "",
+      national_id: coach.national_id || "",
+      image: coach.image || "",
+    });
     setEditingCoachId(coach._id);
     setIsEditing(true);
     setShowForm(true);
@@ -108,11 +121,12 @@ const Coaches = () => {
       email: "",
       phone: "",
       age: "",
+      sex: "",
       address: "",
       certification: "",
       experience: "",
       club: "",
-      national_id: "", // reset national_id
+      national_id: "",
       image: "",
     });
     setShowForm(false);
@@ -124,121 +138,120 @@ const Coaches = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const renderTable = (list) => (
+    <div className="overflow-x-auto bg-white rounded shadow">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sex</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Certification</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Club</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">National ID</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {list.map((coach) => (
+            <tr key={coach._id}>
+              <td className="py-2 px-4">
+                {coach.image ? (
+                  <img
+                    src={coach.image}
+                    alt={coach.name}
+                    className="h-10 w-10 object-contain rounded"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500 text-xs">
+                    No Image
+                  </div>
+                )}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.name}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.email}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.phone}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.age}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.sex}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.address}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.certification}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.experience}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.club}</td>
+              <td className="px-6 py-4 whitespace-nowrap">{coach.national_id}</td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <button
+                  onClick={() => handleEdit(coach)}
+                  className="text-blue-600 hover:underline mr-4"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(coach._id)}
+                  className="text-red-600 hover:underline"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {list.length === 0 && <p className="text-center py-4">No coaches found.</p>}
+    </div>
+  );
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-2xl  font-bold ">Coaches</span>
+        <div className="flex justify-between items-center mb-4 space-x-4 flex-wrap">
+          <h1 className="text-2xl font-bold flex-grow">Coaches</h1>
+
           <input
             type="text"
             placeholder="Search coaches..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border rounded bg-white px-3 py-2 sm:w-1/2 w-full"
+            className="border rounded bg-white px-3 py-2 sm:w-1/2 w-full max-w-md"
           />
+
           <button
             onClick={() => setShowForm(true)}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition whitespace-nowrap"
           >
             Add Coach
           </button>
         </div>
 
-        <div className="overflow-x-auto bg-white rounded shadow">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Image
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Age
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Address
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Certification
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Experience
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Club
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  National ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredCoaches.map((coach) => (
-                <tr key={coach._id}>
-                  <td className="py-2 px-4">
-                    {coach.image ? (
-                      <img
-                        src={coach.image}
-                        alt={coach.name}
-                        className="h-10 w-10 object-contain rounded"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500 text-xs">
-                        No Image
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{coach.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{coach.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{coach.phone}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{coach.age}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {coach.address}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {coach.certification}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{coach.experience}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{coach.club}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{coach.national_id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => handleEdit(coach)}
-                      className="text-blue-600 hover:underline mr-4"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(coach._id)}
-                      className="text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {filteredCoaches.length === 0 && (
-                <tr>
-                  <td colSpan="11" className="text-center py-4">
-                    No coaches found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="mb-4 flex space-x-4">
+          <button
+            className={`px-4 py-2 rounded font-semibold ${
+              selectedSex === "male"
+                ? "bg-green-600 text-white"
+                : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+            }`}
+            onClick={() => setSelectedSex("male")}
+          >
+            Male Coaches
+          </button>
+          <button
+            className={`px-4 py-2 rounded font-semibold ${
+              selectedSex === "female"
+                ? "bg-pink-600 text-white"
+                : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+            }`}
+            onClick={() => setSelectedSex("female")}
+          >
+            Female Coaches
+          </button>
         </div>
+
+        {renderTable(filteredCoaches)}
       </div>
 
       {showForm && (
@@ -257,7 +270,6 @@ const Coaches = () => {
                 {isEditing ? "Edit Coach" : "Add New Coach"}
               </h2>
 
-              {/* Explicit inputs to control required & type better */}
               <input
                 type="text"
                 name="name"
@@ -295,6 +307,18 @@ const Coaches = () => {
                 min="0"
                 className="border px-3 py-2 rounded"
               />
+              <select
+                name="sex"
+                value={formData.sex}
+                onChange={handleChange}
+                required
+                className="border px-3 py-2 rounded"
+              >
+                <option value="">Select Sex</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
               <input
                 type="text"
                 name="address"
@@ -341,7 +365,6 @@ const Coaches = () => {
                 required
                 className="border px-3 py-2 rounded"
               />
-              {/* Image can be optional or file upload handled separately */}
               <input
                 type="text"
                 name="image"

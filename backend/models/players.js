@@ -5,6 +5,7 @@ const playerSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true, unique: true },
   age: { type: Number, required: true },
+  sex:{type: String, required: true, enum: ['Male', 'Female', 'Other']},
   address: { type: String, required: true },
   national_id: { type: String, required: true, unique: true },
   createdAt: { type: Date, default: Date.now },

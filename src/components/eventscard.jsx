@@ -17,10 +17,10 @@ const Eventscard = () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const upcomingEvents = data.filter(event => new Date(event.date) >= today);
-
-      // Sort ascending by date
-      upcomingEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+      const upcomingEvents = data
+        .filter((event) => new Date(event.date) >= today)
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .slice(0, 3); // Limit to 3 events
 
       setEvents(upcomingEvents);
     } catch (error) {
@@ -30,7 +30,7 @@ const Eventscard = () => {
   };
 
   return (
-    <div className="flex flex-row items-start h-autoflex w-auto h-auto bg-white rounded-lg shadow-md my-4 bg-gray-100">
+    <div className="flex flex-row items-start w-auto h-auto bg-white rounded-lg shadow-md my-4 bg-gray-100">
       <div className="container mx-auto px-4 py-8">
         <h2 className="text-2xl font-bold mb-6">Upcoming Events</h2>
 
